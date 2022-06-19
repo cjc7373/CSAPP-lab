@@ -23,9 +23,11 @@ Homework solutions: https://dreamanddead.github.io/CSAPP-3e-Solutions/
 Lectures: (CMU site)
 - [x] 2022-02-22 - Lecture 05: Machine-Level Programming I: Basics
 - [x] 2022-02-23 - Lecture 06: Machine-Level Programming II: Control
-- [x] 2022-02-24 - Forgotten - Recitation 4: Bomb Lab
+- [x] 2022-02-24 - Recitation 4: Bomb Lab
 - [x] 2022-03-07 - Lecture 07: Machine-Level Programming III: Procedures
-- [ ] Lecture 08: Machine-Level Programming IV: Data
+- [x] 2022-06-17 - Lecture 08: Machine-Level Programming IV: Data
+- [x] 2022-06-19 - Recitation 5: Attack Lab and Stacks
+    - NEED REVIEW, what is ROP?
 
 ## Lab schedule
 | Name | Start Time | Finish Time |
@@ -35,8 +37,8 @@ Lectures: (CMU site)
 
 ## Pitfalls and notes
 - Data lab
-    - in some functions, dlc requires all the variables be declared in the beginning of the function, or `parse error` will be raised.
-    - btest.c has a warning in gcc :)
+- in some functions, dlc requires all the variables be declared in the beginning of the function, or `parse error` will be raised.
+- btest.c has a warning in gcc :)
 - All assembly files are generated with `gcc -Og -S file.c -o file.o`
 
 ## Write-up
@@ -48,14 +50,13 @@ Run `./driver.pl` to run the test suite.
 Should learn some GDB...
 e.g. set breakpoints, single-step through assembly code, inspect register and memory states.
 
-Some helpful commands:
-- break \<location\>: add a breakpoint (location could be a function name or an address)
-- run: run the program from the beginning
-- disassemble (disas): disassembe the function running right now
-- info r, info registers: show the register values
-- print $rsp: this dollar sign is strange..
-- stepi, si: Step one instruction exactly
-- nexti, ni: Step one instruction, but proceed through subroutine calls
-- x/FMT address: examine the memory address
-- step, s: keep going until the next breakpoint
+Bomb lab is so much fun!
 
+Make use of the GDB TUI!
+
+- phase_6: we need to understand the data structure through the assembly code..
+    - read six numbers
+    - every number should <= 6
+    - every number should not equal
+    - the first number should be 6?
+    - what the hell is 0x6032d0 nodeX?
