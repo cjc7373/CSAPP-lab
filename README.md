@@ -42,6 +42,7 @@ Lectures: (CMU site)
 - All assembly files are generated with `gcc -Og -S file.c -o file.o`
 
 ## Write-up
+Lab readme and writeups are very useful!
 ### Data lab
 See the comments in `datalab/bits.c`.
 Run `./driver.pl` to run the test suite.
@@ -60,3 +61,22 @@ Make use of the GDB TUI!
     - every number should not equal
     - the first number should be 6?
     - what the hell is 0x6032d0 nodeX?
+
+### Attack lab
+touch1 is in 0x4017c0
+
+getbuf:
+```asm
+=> 0x00000000004017a8 <+0>:     sub    $0x28,%rsp
+   0x00000000004017ac <+4>:     mov    %rsp,%rdi
+   0x00000000004017af <+7>:     call   0x401a40 <Gets>
+   0x00000000004017b4 <+12>:    mov    $0x1,%eax
+   0x00000000004017b9 <+17>:    add    $0x28,%rsp
+   0x00000000004017bd <+21>:    ret    
+```
+stack frame size is 0x28 (40B)
+
+Why %rbp is frame pointer? https://stackoverflow.com/questions/41912684/what-is-the-purpose-of-the-rbp-register-in-x86-64-assembler
+
+In level2, we cannot put instructions below 0x5561dca0 (%rsp at the beginning of `getbuf`),
+because these areas will be pushed some data like touch2 address and cookie.

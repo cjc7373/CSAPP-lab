@@ -1,0 +1,1 @@
+void test() { char s[10] = "59b997fa"; }
