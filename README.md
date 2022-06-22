@@ -80,3 +80,6 @@ Why %rbp is frame pointer? https://stackoverflow.com/questions/41912684/what-is-
 
 In level2, we cannot put instructions below 0x5561dca0 (%rsp at the beginning of `getbuf`),
 because these areas will be pushed some data like touch2 address and cookie.
+
+Level3 is similar to level2, in spite of passing a pointer than an integer.
+Note we need to set the end of the string '\0'.

