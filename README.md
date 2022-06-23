@@ -27,25 +27,27 @@ Lectures: (CMU site)
 - [x] 2022-03-07 - Lecture 07: Machine-Level Programming III: Procedures
 - [x] 2022-06-17 - Lecture 08: Machine-Level Programming IV: Data
 - [x] 2022-06-19 - Recitation 5: Attack Lab and Stacks
-    - NEED REVIEW, what is ROP?
 
 ## Lab schedule
 | Name | Start Time | Finish Time |
 | ---- | ---------- | ----------- |
 | Data Lab | 2021-12-15 | Not yet |
 | Bomb Lab | 2022-02-25 | Not yet |
+| Attack Lab | 2022-06-19 | 2022-06-23 |
+
+- Attack lab phase 5 skipped
 
 ## Pitfalls and notes
-- Data lab
-- in some functions, dlc requires all the variables be declared in the beginning of the function, or `parse error` will be raised.
-- btest.c has a warning in gcc :)
 - All assembly files are generated with `gcc -Og -S file.c -o file.o`
 
-## Write-up
+## Lab Write-up
 Lab readme and writeups are very useful!
 ### Data lab
 See the comments in `datalab/bits.c`.
 Run `./driver.pl` to run the test suite.
+
+- in some functions, dlc requires all the variables be declared in the beginning of the function, or `parse error` will be raised.
+- btest.c has a warning in gcc :)
 
 ### Bomb lab
 Should learn some GDB...
@@ -83,3 +85,7 @@ because these areas will be pushed some data like touch2 address and cookie.
 
 Level3 is similar to level2, in spite of passing a pointer than an integer.
 Note we need to set the end of the string '\0'.
+
+I got a pitfall that if I added %rsp in the end, the data below %rsp may be lost..
+
+It is useful to draw stack diagrams.
