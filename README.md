@@ -27,18 +27,24 @@ Lectures: (CMU site)
 - [x] 2022-03-07 - Lecture 07: Machine-Level Programming III: Procedures
 - [x] 2022-06-17 - Lecture 08: Machine-Level Programming IV: Data
 - [x] 2022-06-19 - Recitation 5: Attack Lab and Stacks
+- [x] 2022-06-25 - Lecture 09: Machine-Level Programming V: Advanced Topics
+- [ ] 2022-06-29 - Lecture 10: Program Optimization
+    - need to review.. I haven't quite understood this chapter, especially instruction parallelism.
+- [ ] - Recitation 6: C Review
 
 ## Lab schedule
 | Name | Start Time | Finish Time |
 | ---- | ---------- | ----------- |
 | Data Lab | 2021-12-15 | Not yet |
-| Bomb Lab | 2022-02-25 | Not yet |
+| Bomb Lab | 2022-02-25 | 2022-06-19 |
 | Attack Lab | 2022-06-19 | 2022-06-23 |
 
+- Bomb lab phase 6 skipped
 - Attack lab phase 5 skipped
 
 ## Pitfalls and notes
 - All assembly files are generated with `gcc -Og -S file.c -o file.o`
+- In `test/procedure_call_perf_test/profile.py`, I reproduced the example shown in the Program Optimization class.
 
 ## Lab Write-up
 Lab readme and writeups are very useful!
