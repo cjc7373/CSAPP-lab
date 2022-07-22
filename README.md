@@ -30,7 +30,11 @@ Lectures: (CMU site)
 - [x] 2022-06-25 - Lecture 09: Machine-Level Programming V: Advanced Topics
 - [ ] 2022-06-29 - Lecture 10: Program Optimization
     - need to review.. I haven't quite understood this chapter, especially instruction parallelism.
-- [ ] - Recitation 6: C Review
+- [x] 2022-07-01 - Recitation 6: C Review
+    - skimmed
+- [x] 2022-07-22 Lecture 11: The Memory Hierarchy
+    - easier than previous chapters, maybe I've had some foundations..
+- [] Lecture 12: Cache Memories
 
 ## Lab schedule
 | Name | Start Time | Finish Time |
