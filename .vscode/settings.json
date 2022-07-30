@@ -3,6 +3,14 @@
     "files.associations": {
         "random": "c",
         "cstring": "c",
-        "string.h": "c"
+        "string.h": "c",
+        "unistd.h": "c",
+        "stdlib.h": "c",
+        "stdio.h": "c",
+        "getopt.h": "c",
+        "getopt_ext.h": "c",
+        "getopt_core.h": "c",
+        "stdint.h": "c",
+        "future": "c"
     }
 }

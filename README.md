@@ -99,3 +99,13 @@ Note we need to set the end of the string '\0'.
 I got a pitfall that if I added %rsp in the end, the data below %rsp may be lost..
 
 It is useful to draw stack diagrams.
+
+## Cache lab
+A cache simulator built from scratch! That's quite a bit work.
+I should write not only a command line parser, also data structures like doubly linked list (used in LRU cache).
+
+The write policy should be write-back and write-allocate, though the lab writeup doesnot mention it.
+
+> memory accesses are aligned properly, such that a single
+memory access never crosses block boundaries. By making this assumption, you can ignore the
+request sizes in the valgrind traces
