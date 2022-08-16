@@ -34,7 +34,8 @@ Lectures: (CMU site)
     - skimmed
 - [x] 2022-07-22 Lecture 11: The Memory Hierarchy
     - easier than previous chapters, maybe I've had some foundations..
-- [] Lecture 12: Cache Memories
+- [x] 2022-08-03 Lecture 12: Cache Memories
+- [] Recitation 7: Cache Lab and Blocking
 
 ## Lab schedule
 | Name | Start Time | Finish Time |

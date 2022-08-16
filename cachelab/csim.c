@@ -52,8 +52,9 @@ void init_linklist(linklist* l);
 void print_help_message(char* program_name);
 void init_cache();
 cache_line* read_cache(linklist* set, int64_t tag);
-cache_line* search_lines(linklist* set, int64_t tag);
-void load_address(linklist* set, int64_t tag);
+linklist_node* search_lines(linklist* set, int64_t tag);
+void move_node_to_head(linklist* set, linklist_node* node);
+linklist_node* load_address(linklist* set, int64_t tag);
 
 int main(int argc, char** argv) {
     int option;
@@ -136,13 +137,14 @@ int main(int argc, char** argv) {
                 break;
             case 'M':
                 read_cache(set, tag);
+                // for now, write is equal to read
                 read_cache(set, tag);
                 break;
 
             default:
                 abort();
         }
-        printf("\n");
+        printf(" \n");
     }
 
     printSummary(hit_cnt, miss_cnt, eviction_cnt);
@@ -196,13 +198,15 @@ void init_cache() {
 }
 
 cache_line* read_cache(linklist* set, int64_t tag) {
-    if (search_lines(set, tag) == NULL) {
-        load_address(set, tag);
+    linklist_node* node = search_lines(set, tag);
+    if (node == NULL) {
+        node = load_address(set, tag);
     }
+    move_node_to_head(set, node);
     return NULL;
 }
 
-cache_line* search_lines(linklist* set, int64_t tag) {
+linklist_node* search_lines(linklist* set, int64_t tag) {
     linklist_node* cur = set->head->next;
     // int miss = 0, hit = 0, eviction = 0;
     while (cur != set->tail) {
@@ -216,7 +220,7 @@ cache_line* search_lines(linklist* set, int64_t tag) {
         if (line->tag == tag) {
             if (verbose) printf(" hit");
             hit_cnt++;
-            return line;
+            return cur;
         }
         cur = cur->next;
     }
@@ -226,18 +230,23 @@ cache_line* search_lines(linklist* set, int64_t tag) {
     return NULL;
 }
 
-void load_address(linklist* set, int64_t tag) {
-    // get the LRU line
-    linklist_node* node = set->tail->prev;
-    cache_line* line = node->data;
-    if (!line->valid) line->valid = 1;
-    line->tag = tag;
-
-    // move node to the head
+// move a linklist node to its head
+void move_node_to_head(linklist* set, linklist_node* node) {
     node->prev->next = node->next;
     node->next->prev = node->prev;
     node->prev = set->head;
     node->next = set->head->next;
     set->head->next->prev = node;
     set->head->next = node;
+}
+
+linklist_node* load_address(linklist* set, int64_t tag) {
+    // get the LRU line (the last node in the linklist)
+    linklist_node* node = set->tail->prev;
+    cache_line* line = node->data;
+    // overwrite this line with new tag
+    if (!line->valid) line->valid = 1;
+    line->tag = tag;
+
+    return node;
 }
