@@ -11,6 +11,7 @@
         "getopt_ext.h": "c",
         "getopt_core.h": "c",
         "stdint.h": "c",
-        "future": "c"
+        "future": "c",
+        "cachelab.h": "c"
     }
 }

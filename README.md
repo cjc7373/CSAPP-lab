@@ -35,7 +35,8 @@ Lectures: (CMU site)
 - [x] 2022-07-22 Lecture 11: The Memory Hierarchy
     - easier than previous chapters, maybe I've had some foundations..
 - [x] 2022-08-03 Lecture 12: Cache Memories
-- [] Recitation 7: Cache Lab and Blocking
+- [x] 2022-08-16 Recitation 7: Cache Lab and Blocking
+- [] Lecture 13: Linking
 
 ## Lab schedule
 | Name | Start Time | Finish Time |
@@ -43,6 +44,7 @@ Lectures: (CMU site)
 | Data Lab | 2021-12-15 | Not yet |
 | Bomb Lab | 2022-02-25 | 2022-06-19 |
 | Attack Lab | 2022-06-19 | 2022-06-23 |
+| Cache Lab | 2022-06-22 | 2022-08-16 (Part A) |
 
 - Bomb lab phase 6 skipped
 - Attack lab phase 5 skipped
@@ -102,11 +104,21 @@ I got a pitfall that if I added %rsp in the end, the data below %rsp may be lost
 It is useful to draw stack diagrams.
 
 ## Cache lab
+Part A:
+
 A cache simulator built from scratch! That's quite a bit work.
 I should write not only a command line parser, also data structures like doubly linked list (used in LRU cache).
 
-The write policy should be write-back and write-allocate, though the lab writeup doesnot mention it.
+It seems that we don't actually implement write action, so I'll skip it.
 
 > memory accesses are aligned properly, such that a single
 memory access never crosses block boundaries. By making this assumption, you can ignore the
 request sizes in the valgrind traces
+
+The write-up says the simulator should work for arbitrary s, E, and b. But since address is 64 bits, I'm not considering the case if s, E, or b exceeds 64. 
+
+---
+
+Part B:
+
+
