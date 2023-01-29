@@ -36,7 +36,9 @@ Lectures: (CMU site)
     - easier than previous chapters, maybe I've had some foundations..
 - [x] 2022-08-03 Lecture 12: Cache Memories
 - [x] 2022-08-16 Recitation 7: Cache Lab and Blocking
-- [] Lecture 13: Linking
+- [x] 2022-12-13 Lecture 13: Linking
+- [x] 2023-01-02 Lecture 14: ECF: Exceptions & Processes
+- Not Playable, Recitation 8: Exam Review
 - [x] 2023-01-20 Lecture 15: Exceptional Control Flow: Signals and Nonlocal Jumps
 - [x] 2023-01-24 Lecture 16: System Level I/O
 - [] Recitation 9: Shell Lab, Processes, and Signals, and I/O
