@@ -160,7 +160,42 @@ int main(int argc, char **argv) {
  * background children don't receive SIGINT (SIGTSTP) from the kernel
  * when we type ctrl-c (ctrl-z) at the keyboard.
  */
-void eval(char *cmdline) { return; }
+void eval(char *cmdline) {
+    char *argv[MAXARGS];
+    char buf[MAXLINE];
+    int bg;
+    int jid;
+    pid_t pid;
+
+    strcpy(buf, cmdline);
+    bg = parseline(buf, argv);
+    if (argv[0] == NULL) return;  // ignore empty lines
+
+    if (!builtin_cmd(argv)) {
+        if ((pid = fork()) == 0) {
+            // child process
+            if (execve(argv[0], argv, environ) < 0) {
+                printf("%s: command not found.\n", argv[0]);
+                exit(0);
+            }
+        }
+        jid = nextjid;
+
+        if (!bg) {
+            addjob(jobs, pid, FG, cmdline);
+            int status;
+            if (waitpid(pid, &status, 0) < 0) {
+                unix_error("waitfg: waitpid error");
+            }
+            deletejob(jobs, pid);
+        } else {
+            addjob(jobs, pid, BG, cmdline);
+            printf("[%d] (%d) %s", jid, pid, cmdline);
+        }
+    }
+
+    return;
+}
 
 /*
  * parseline - Parse the command line and build the argv array.
@@ -220,7 +255,14 @@ int parseline(const char *cmdline, char **argv) {
  * builtin_cmd - If the user has typed a built-in command then execute
  *    it immediately.
  */
-int builtin_cmd(char **argv) { return 0; /* not a builtin command */ }
+int builtin_cmd(char **argv) {
+    if (!strcmp(argv[0], "quit")) exit(0);  // exit command
+    if (!strcmp(argv[0], "jobs")) {
+        listjobs(jobs);
+        return 1;
+    }
+    return 0; /* not a builtin command */
+}
 
 /*
  * do_bgfg - Execute the builtin bg and fg commands

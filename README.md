@@ -126,4 +126,7 @@ The write-up says the simulator should work for arbitrary s, E, and b. But since
 
 Part B:
 
+## Shell lab
+> Typing ctrl-c (ctrl-z) should cause a SIGINT (SIGTSTP) signal to be sent to the current foreground job, as well as any descendents of that job (e.g., any child processes that it forked).
 
+Who gets the signal if I press Ctrl+C, the shell or the foreground progress?
