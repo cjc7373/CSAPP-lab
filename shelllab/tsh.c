@@ -167,6 +167,10 @@ void eval(char *cmdline) {
     int jid;
     pid_t pid;
 
+    sigset_t mask, prev;
+    sigemptyset(&mask);
+    sigaddset(&mask, SIGCHLD);
+
     strcpy(buf, cmdline);
     bg = parseline(buf, argv);
     if (argv[0] == NULL) return;  // ignore empty lines
@@ -186,6 +190,15 @@ void eval(char *cmdline) {
             int status;
             if (waitpid(pid, &status, 0) < 0) {
                 unix_error("waitfg: waitpid error");
+            }
+            if (WIFEXITED(status)) {
+                printf(
+                    "Job [%d] (%d) terminated normally with return code %d\n",
+                    jid, pid, WEXITSTATUS(status));
+            }
+            if (WIFSIGNALED(status)) {
+                printf("Job [%d] (%d) terminated by signal %d\n", jid, pid,
+                       WTERMSIG(status));
             }
             deletejob(jobs, pid);
         } else {
@@ -261,6 +274,10 @@ int builtin_cmd(char **argv) {
         listjobs(jobs);
         return 1;
     }
+    if (!strcmp(argv[0], "bg") || !strcmp(argv[0], "fg")) {
+        do_bgfg(argv);
+        return 1;
+    }
     return 0; /* not a builtin command */
 }
 
@@ -285,21 +302,43 @@ void waitfg(pid_t pid) { return; }
  *     available zombie children, but doesn't wait for any other
  *     currently running children to terminate.
  */
-void sigchld_handler(int sig) { return; }
+void sigchld_handler(int sig) {
+    if (verbose) {
+        printf("Received SIGCHLD in shell!\n");
+    }
+    return;
+}
 
 /*
  * sigint_handler - The kernel sends a SIGINT to the shell whenver the
  *    user types ctrl-c at the keyboard.  Catch it and send it along
  *    to the foreground job.
  */
-void sigint_handler(int sig) { return; }
+void sigint_handler(int sig) {
+    int pid = fgpid(jobs);
+    if (verbose) {
+        printf("Received SIGINT in shell!\n");
+    }
+    if (pid) {
+        if (verbose) {
+            printf("current fg process is %d, forwarding signal...\n", pid);
+        }
+        kill(-pid, SIGINT);
+    }
+    return;
+}
 
 /*
  * sigtstp_handler - The kernel sends a SIGTSTP to the shell whenever
  *     the user types ctrl-z at the keyboard. Catch it and suspend the
  *     foreground job by sending it a SIGTSTP.
  */
-void sigtstp_handler(int sig) { return; }
+void sigtstp_handler(int sig) {
+    if (verbose) {
+        printf("Received SIGTSTP in shell!\n");
+    }
+    return;
+}
 
 /*********************
  * End signal handlers

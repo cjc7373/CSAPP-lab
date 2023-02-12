@@ -129,4 +129,14 @@ Part B:
 ## Shell lab
 > Typing ctrl-c (ctrl-z) should cause a SIGINT (SIGTSTP) signal to be sent to the current foreground job, as well as any descendents of that job (e.g., any child processes that it forked).
 
-Who gets the signal if I press Ctrl+C, the shell or the foreground progress?
+Notes:
+- process groups: jobs have different process groups. i.e. background processes' process group differs from foreground's
+    - a precess by default has a process group ID same as its parent. So we need to explicitly change its process group
+- a debug command: `./sdriver.pl -t traceXX.txt -s ./tsh -a "-pv" -v`
+- our shell doesn't need to support shell scripts. Shell scripts will have different behaviors about signal handling.
+- I tried to write an autograder, but then I realized that `./tsh` and `./tshref` will always differ in child process pids. Eventually I think it's not worth it.
+
+Issues:
+- Who gets the signal if I press Ctrl+C, the shell or the foreground progress?
+    - from the behavior of the test driver, the shell receives the signal.
+
