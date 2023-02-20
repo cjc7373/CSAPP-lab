@@ -41,6 +41,8 @@ char prompt[] = "tsh> "; /* command line prompt (DO NOT CHANGE) */
 int verbose = 0;         /* if true, print additional output */
 int nextjid = 1;         /* next job ID to allocate */
 char sbuf[MAXLINE];      /* for composing sprintf messages */
+volatile sig_atomic_t
+    s_pid;  // used for communication between main function and sigchld handler
 
 struct job_t {             /* The job struct */
     pid_t pid;             /* job PID */
@@ -77,6 +79,7 @@ struct job_t *getjobpid(struct job_t *jobs, pid_t pid);
 struct job_t *getjobjid(struct job_t *jobs, int jid);
 int pid2jid(pid_t pid);
 void listjobs(struct job_t *jobs);
+void changejobstatus(struct job_t *job, int state);
 
 void usage(void);
 void unix_error(char *msg);
@@ -143,7 +146,6 @@ int main(int argc, char **argv) {
         /* Evaluate the command line */
         eval(cmdline);
         fflush(stdout);
-        fflush(stdout);
     }
 
     exit(0); /* control never reaches here */
@@ -176,8 +178,22 @@ void eval(char *cmdline) {
     if (argv[0] == NULL) return;  // ignore empty lines
 
     if (!builtin_cmd(argv)) {
+        // The parent needs to block the SIGCHLD signals in this way in order to
+        // avoid the race condition where the child is reaped by sigchld handler
+        // (and thus removed from the job list) before the parent calls addjob.
+        sigprocmask(SIG_BLOCK, &mask, &prev);
         if ((pid = fork()) == 0) {
             // child process
+
+            // children inherit the `blocked` vectors of their parents
+            // so we need to unblock SIGCHLD signals
+            sigprocmask(SIG_SETMASK, &prev, NULL);
+
+            // set process group id to its pid
+            if (setpgid(0, 0) < 0) {
+                unix_error("setpgid error");
+            }
+
             if (execve(argv[0], argv, environ) < 0) {
                 printf("%s: command not found.\n", argv[0]);
                 exit(0);
@@ -186,23 +202,15 @@ void eval(char *cmdline) {
         jid = nextjid;
 
         if (!bg) {
+            s_pid = 0;
             addjob(jobs, pid, FG, cmdline);
-            int status;
-            if (waitpid(pid, &status, 0) < 0) {
-                unix_error("waitfg: waitpid error");
-            }
-            if (WIFEXITED(status)) {
-                printf(
-                    "Job [%d] (%d) terminated normally with return code %d\n",
-                    jid, pid, WEXITSTATUS(status));
-            }
-            if (WIFSIGNALED(status)) {
-                printf("Job [%d] (%d) terminated by signal %d\n", jid, pid,
-                       WTERMSIG(status));
-            }
-            deletejob(jobs, pid);
+            sigprocmask(SIG_SETMASK, &prev, NULL);
+
+            waitfg(pid);
         } else {
             addjob(jobs, pid, BG, cmdline);
+            sigprocmask(SIG_SETMASK, &prev, NULL);
+            // print jid and pid if it is a background job
             printf("[%d] (%d) %s", jid, pid, cmdline);
         }
     }
@@ -289,7 +297,15 @@ void do_bgfg(char **argv) { return; }
 /*
  * waitfg - Block until process pid is no longer the foreground process
  */
-void waitfg(pid_t pid) { return; }
+void waitfg(pid_t pid) {
+    // This function will not call `waitpid` since the child process
+    // will send SIGCHLD when exited, and it will be problematic if
+    // SIGCHLD already reaped this process
+    while (!s_pid) {
+        sleep(1);
+    }
+    return;
+}
 
 /*****************
  * Signal handlers
@@ -303,9 +319,49 @@ void waitfg(pid_t pid) { return; }
  *     currently running children to terminate.
  */
 void sigchld_handler(int sig) {
+    // make sure old errno doesn't get overwritten
+    int olderrno = errno;
+
     if (verbose) {
-        printf("Received SIGCHLD in shell!\n");
+        printf("sigchld_handler: entering\n");
     }
+
+    int status, pid;
+
+    // -1 means all the child processes the parent owns
+    // we are using WNOHANG because there can be multiple unreaped
+    // child processes, and there may be still some processes running
+    while ((pid = waitpid(-1, &status, WNOHANG | WUNTRACED)) > 0) {
+        struct job_t *job = getjobpid(jobs, pid);
+        if (WIFSTOPPED(status)) {
+            changejobstatus(job, ST);
+        } else {
+            if (WIFEXITED(status) && verbose) {
+                printf(
+                    "Job [%d] (%d) terminated normally with return code %d\n",
+                    job->jid, pid, WEXITSTATUS(status));
+            }
+            if (WIFSIGNALED(status)) {
+                printf("Job [%d] (%d) terminated by signal %d\n", job->jid, pid,
+                       WTERMSIG(status));
+            }
+            deletejob(jobs, pid);
+        }
+    }
+    // if pid == 0, then there are no more processes to be reaped
+    // but there's change that ECHILD could raise because currently there
+    // are no other child processes
+    if (pid < 0 && errno != ECHILD) {
+        unix_error("sigchld_handler: waitpid error");
+    }
+
+    errno = olderrno;
+    s_pid = pid;
+
+    if (verbose) {
+        printf("sigchld_handler: exiting\n");
+    }
+
     return;
 }
 
@@ -317,13 +373,18 @@ void sigchld_handler(int sig) {
 void sigint_handler(int sig) {
     int pid = fgpid(jobs);
     if (verbose) {
-        printf("Received SIGINT in shell!\n");
+        printf("sigint_handler: entering\n");
     }
     if (pid) {
         if (verbose) {
-            printf("current fg process is %d, forwarding signal...\n", pid);
+            printf("current fg process group is %d, forwarding signal...\n",
+                   -pid);
         }
         kill(-pid, SIGINT);
+    }
+
+    if (verbose) {
+        printf("sigint_handler: exiting\n");
     }
     return;
 }
@@ -334,8 +395,21 @@ void sigint_handler(int sig) {
  *     foreground job by sending it a SIGTSTP.
  */
 void sigtstp_handler(int sig) {
+    int pid = fgpid(jobs);
     if (verbose) {
-        printf("Received SIGTSTP in shell!\n");
+        printf("sigtstp_handler: entering\n");
+    }
+    if (pid) {
+        if (verbose) {
+            printf("current fg process group is %d, forwarding signal...\n",
+                   -pid);
+        }
+        fflush(stdout);
+        kill(-pid, SIGTSTP);
+    }
+
+    if (verbose) {
+        printf("sigtstp_handler: exiting\n");
     }
     return;
 }
@@ -388,6 +462,7 @@ int addjob(struct job_t *jobs, pid_t pid, int state, char *cmdline) {
             if (verbose) {
                 printf("Added job [%d] %d %s\n", jobs[i].jid, jobs[i].pid,
                        jobs[i].cmdline);
+                fflush(stdout);
             }
             return 1;
         }
@@ -439,6 +514,18 @@ struct job_t *getjobjid(struct job_t *jobs, int jid) {
     for (i = 0; i < MAXJOBS; i++)
         if (jobs[i].jid == jid) return &jobs[i];
     return NULL;
+}
+
+void changejobstatus(struct job_t *job, int state) {
+    if (job->state == UNDEF ||                // unused job
+        (job->state == FG && state == ST) ||  // ctrl+z
+        (job->state == ST && state == BG) ||  // fg
+        (job->state == ST && state == FG) ||  // bg
+        (job->state == BG && state == FG)     // fg
+    ) {
+    } else {
+        app_error("State transition not legal.");
+    }
 }
 
 /* pid2jid - Map process ID to job ID */
