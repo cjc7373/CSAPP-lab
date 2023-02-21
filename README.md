@@ -50,6 +50,7 @@ Lectures: (CMU site)
 | Bomb Lab | 2022-02-25 | 2022-06-19 |
 | Attack Lab | 2022-06-19 | 2022-06-23 |
 | Cache Lab | 2022-06-22 | 2022-08-16 (Part A) |
+| Shell Lab | 2023-01-24 | 2023-02-21 |
 
 - Bomb lab phase 6 skipped
 - Attack lab phase 5 skipped
@@ -134,9 +135,9 @@ Notes:
     - a precess by default has a process group ID same as its parent. So we need to explicitly change its process group
 - a debug command: `./sdriver.pl -t traceXX.txt -s ./tsh -a "-pv" -v`
 - our shell doesn't need to support shell scripts. Shell scripts will have different behaviors about signal handling.
-- I tried to write an autograder, but then I realized that `./tsh` and `./tshref` will always differ in child process pids. Eventually I think it's not worth it.
+- I tried to write an autograder, but then I realized that `./tsh` and `./tshref` will always differ in child process pids. Eventually I think it's not worth it. Then I use `make rtestxx && make testxx` to compare my results with reftsh results.
 
 Issues:
 - Who gets the signal if I press Ctrl+C, the shell or the foreground progress?
-    - from the behavior of the test driver, the shell receives the signal.
+    - from the behavior of the test driver, the shell receives the signal. And the shell then forwards this signal to the foreground process group.
 
